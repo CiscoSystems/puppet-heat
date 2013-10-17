@@ -34,8 +34,8 @@ class heat::engine (
     require    => [ File['/etc/heat/heat.conf'],
                     Exec['heat-encryption-key-replacement'],
                     Package['heat-common'],
-        Package['heat-engine'],
-        Class['heat::db']],
+                    Package['heat-engine']],
+    subscribe  => Exec['heat-dbsync'],
   }
 
   exec {'heat-encryption-key-replacement':
