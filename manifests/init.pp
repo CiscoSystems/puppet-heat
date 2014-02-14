@@ -22,8 +22,8 @@
 #    user to connect to the rabbit server. Optional. Defaults to 'guest'
 #  [*rabbit_password*]
 #    password to connect to the rabbit_server. Optional. Defaults to empty.
-#  [*rabbit_virtual_host*]
-#    virtual_host to use. Optional. Defaults to '/'
+#  [*rabbit_virtualhost*]
+#    virtualhost to use. Optional. Defaults to '/'
 #
 #  (keystone authentication options)
 #  [*keystone_host*]
@@ -49,7 +49,14 @@
 #  [*qpid_reconnect_interval_min*]
 #  [*qpid_reconnect_interval_max*]
 #
-
+# [*use_syslog*]
+#   (optional) Use syslog for logging
+#   Defaults to false
+#
+# [*log_facility*]
+#   (optional) Syslog facility to receive log lines
+#   Defaults to LOG_USER
+#
 class heat(
   $auth_uri                    = 'http://127.0.0.1:5000/v2.0',
   $package_ensure              = 'present',
@@ -69,7 +76,7 @@ class heat(
   $rabbit_hosts                = undef,
   $rabbit_userid               = 'guest',
   $rabbit_password             = '',
-  $rabbit_virtual_host         = '/',
+  $rabbit_virtualhost          = '/',
   $qpid_hostname               = 'localhost',
   $qpid_port                   = 5672,
   $qpid_username               = 'guest',
@@ -84,6 +91,8 @@ class heat(
   $qpid_reconnect_interval_max = 0,
   $qpid_reconnect_interval     = 0,
   $sql_connection              = false,
+  $use_syslog                  = false,
+  $log_facility                = 'LOG_USER',
 ) {
 
   include heat::params
@@ -150,7 +159,7 @@ class heat(
       heat_config {
         'DEFAULT/rabbit_userid'          : value => $rabbit_userid;
         'DEFAULT/rabbit_password'        : value => $rabbit_password;
-        'DEFAULT/rabbit_virtual_host'    : value => $rabbit_virtual_host;
+        'DEFAULT/rabbit_virtualhost'     : value => $rabbit_virtualhost;
       }
   }
 
@@ -230,6 +239,18 @@ class heat(
       user        => 'heat',
       refreshonly => true,
       logoutput   => on_failure,
+    }
+  }
+
+  # Syslog configuration
+  if $use_syslog {
+    heat_config {
+      'DEFAULT/use_syslog':           value => true;
+      'DEFAULT/syslog_log_facility':  value => $log_facility;
+    }
+  } else {
+    heat_config {
+      'DEFAULT/use_syslog':           value => false;
     }
   }
 
